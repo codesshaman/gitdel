@@ -5,15 +5,11 @@
 
 ### Description
 
-This script automatically creates the configuration.git and uploads the first commit to the remote repository.
-
-The settings for the name of the first branch and commit are in the gitdel script.
-
-For the script to work, you need to configure the key using the script `keygen_en.sh `, the settings are described below.
+Script deletes the specified branch locally and (optionally) on the remote repository.
 
 # Usage
 
-### Step 1: Clone repo
+### Clone repo
 
 ```
 git clone https://github.com/codesshaman/gitdel.git
@@ -21,16 +17,6 @@ git clone https://github.com/codesshaman/gitdel.git
 
 ```
 cd gitdel
-```
-
-### Step 2: Generate key
-
-Open ``keygen_en.sh`` in text editor and change credentials to your github nickname and email.
-
-Generate key:
-
-```
-./keygen_en.sh
 ```
 
 ### Installing:
@@ -49,19 +35,17 @@ sudo cp gitdel /usr/local/bin
 
 ### Command for launch:
 
+Inside of your repo folder:
+
 ```
-gitdel
+gitdel <branch_name>
 ```
 
 ### Russian
 
 ### Описание
 
-Данный скрипт автоматически создаёт конфигурацию .git и заливает первый коммит в удалённый репозиторий.
-
-Настройки имени первой ветки и коммита находятся в скрипте gitdel.
-
-Для работы скрипта необходимо настроить ключ скриптом ``keygen_en.sh``, настройки описаны ниже.
+Данный скрипт автоматически удаляет ветку локального, а по желанию и удалённого репозитория.
 
 # Использование
 
@@ -71,7 +55,9 @@ gitdel
 git clone https://github.com/codesshaman/gitdel.git
 ```
 
-``cd gitdel``
+```
+cd gitdel
+```
 
 ```
 mv gitdel_rus gitdel && chmod a+x gitdel
@@ -83,10 +69,6 @@ sudo cp gitdel /usr/local/bin
 
 ### Команда для запуска:
 
-``gitdel``
+Внутри вашего репозитория:
 
-### Команда для инициализации репозитория:
-
-(выполнять из папки, созданной для репозитория)
-
-``gitdel https://github.com/<user>/<repo>.git``
+``gitdel <имя_удаляемой_ветки>``
