@@ -15,11 +15,11 @@ if [ $# -ne 1 ]; then
     echo -e "${RED}Ошибка:${NC} нужно указать имя ветки"
     echo ""
     echo "Использование:"
-    echo "    git-delete-branch имя-ветки"
+    echo "    gitdel имя-ветки"
     echo ""
     echo "Примеры:"
-    echo "    git-delete-branch feature/login"
-    echo "    git-delete-branch bugfix/123-fix-crash"
+    echo "    gitdel feature/login"
+    echo "    gitdel bugfix/123-fix-crash"
     exit 1
 fi
 
