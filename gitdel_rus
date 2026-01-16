@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Скрипт: git-delete-branch
+# Удаляет указанную ветку локально и (по желанию) на удалённом репозитории
+
+set -euo pipefail
+
+# Цвета для вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Проверка, передан ли аргумент
+if [ $# -ne 1 ]; then
+    echo -e "${RED}Ошибка:${NC} нужно указать имя ветки"
+    echo ""
+    echo "Использование:"
+    echo "    git-delete-branch имя-ветки"
+    echo ""
+    echo "Примеры:"
+    echo "    git-delete-branch feature/login"
+    echo "    git-delete-branch bugfix/123-fix-crash"
+    exit 1
+fi
+
+BRANCH="$1"
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
+# Проверяем, что мы вообще в git-репозитории
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -e "${RED}Ошибка:${NC} текущая директория не является git-репозиторием"
+    exit 1
+fi
+
+# Проверяем, существует ли ветка локально
+if ! git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    echo -e "${RED}Ошибка:${NC} ветка ${YELLOW}$BRANCH${NC} не найдена локально"
+    exit 1
+fi
+
+# Запрещаем удалять текущую ветку
+if [ "$BRANCH" = "$CURRENT_BRANCH" ]; then
+    echo -e "${RED}Ошибка:${NC} нельзя удалить текущую ветку (${YELLOW}$CURRENT_BRANCH${NC})"
+    echo "Сначала переключитесь на другую ветку, например:"
+    echo "    git checkout main"
+    exit 1
+fi
+
+echo -e "Локальная ветка:  ${YELLOW}$BRANCH${NC}"
+echo -e "Текущая ветка:   ${YELLOW}$CURRENT_BRANCH${NC}"
+echo ""
+
+# Удаляем локально
+echo -e "Удаляем локальную ветку ${YELLOW}$BRANCH${NC}..."
+if git branch -D "$BRANCH"; then
+    echo -e "${GREEN}Локальная ветка удалена${NC}"
+else
+    echo -e "${RED}Не удалось удалить локальную ветку${NC}"
+    exit 1
+fi
+
+# Определяем основной remote (обычно origin)
+REMOTE="origin"
+if ! git remote | grep -q "^$REMOTE$"; then
+    REMOTE=$(git remote | head -n 1)
+    if [ -z "$REMOTE" ]; then
+        echo -e "${YELLOW}Предупреждение:${NC} не найден remote-репозиторий"
+        exit 0
+    fi
+    echo -e "${YELLOW}Используется remote:${NC} $REMOTE (автоопределение)"
+fi
+
+# Проверяем, существует ли ветка на удалённом репозитории
+if git ls-remote --exit-code --heads "$REMOTE" "$BRANCH" >/dev/null 2>&1; then
+    echo ""
+    echo -e "Ветка ${YELLOW}$BRANCH${NC} найдена в удалённом репозитории (${YELLOW}$REMOTE${NC})."
+    read -p "Удалить её также на удалённом репозитории? [y/N] " answer
+
+    case "$answer" in
+        [Yy]* )
+            echo -e "Удаляем удалённую ветку ${YELLOW}$REMOTE/$BRANCH${NC}..."
+            if git push "$REMOTE" --delete "$BRANCH"; then
+                echo -e "${GREEN}Удалённая ветка успешно удалена${NC}"
+            else
+                echo -e "${RED}Ошибка при удалении удалённой ветки${NC}"
+                echo "Попробуйте вручную:"
+                echo "    git push $REMOTE --delete $BRANCH"
+            fi
+            ;;
+        * )
+            echo -e "${YELLOW}Удалённая ветка НЕ удалена${NC}"
+            ;;
+    esac
+else
+    echo -e "${YELLOW}Ветка $BRANCH не найдена на удалённом репозитории ($REMOTE)${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}Готово.${NC}"
